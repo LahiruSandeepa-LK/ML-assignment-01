@@ -1,0 +1,9 @@
+Dataset
+https://archive.ics.uci.edu/dataset/697/predict+students+dropout+and+academic+success
+https://doi.org/10.24432/C5MC89
+
+GitHub repository
+https://github.com/LahiruSandeepa-LK/ML-assignment-01
+
+Presentation video
+YOUTUBE-LINK
