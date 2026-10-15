@@ -195,7 +195,7 @@ def evaluate_cv(model, X, y, *, name, variant="all features", task="multiclass",
 
 
 def results_table(rows):
-    """Stack result dicts into a DataFrame with the agreed column order."""
+    """Stack result dicts into a DataFrame with the fixed column order."""
     return pd.DataFrame(rows, columns=RESULTS_COLUMNS)
 
 

@@ -134,7 +134,7 @@ def load_raw(root=None):
 
 
 def make_splits(df=None, binary=False, engineered=True):
-    """Return X_dev, X_test, y_dev, y_test from the one agreed split.
+    """Return X_dev, X_test, y_dev, y_test from the single fixed split.
 
     binary=True collapses the target to Dropout vs rest.
     """
