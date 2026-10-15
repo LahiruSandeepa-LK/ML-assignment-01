@@ -51,91 +51,28 @@ discrepancies with the descriptor paper.
 
 ## Methodology
 
-A single stratified **80/20 split** (3,539 development / 885 test rows, `random_state=42`) is
-fixed in `src/data.py` and reused everywhere. All model selection is cross-validated on the
-development set; **the test set is evaluated exactly once, in notebook 05.**
-
-**Preprocessing** (all inside scikit-learn `Pipeline`s, so every statistic is fitted on training
-folds only — no leakage):
-
-- **Encoding** — nine nominal code columns one-hot encoded with rare levels (<1%) folded into an
-  `infrequent` bucket learned on training data only.
-- **Standardisation** — continuous columns centred and scaled; required by Logistic Regression's
-  gradient solver, harmless to Random Forest, and kept for both so the two consume an identical matrix.
-- **Feature engineering** — four leakage-free, row-wise features (`approval_rate_1st/2nd`,
-  `grade_trend`, `total_approved`).
-- **Dimensionality reduction, both kinds** — *selection* (ANOVA F / mutual information / chi-square)
-  keeps original columns; *extraction* is **standardised PCA** on the continuous block (23 columns →
-  13 components, 95% variance), fitted inside the pipeline.
-
-**Four feature variants** (`all`, `reduced`, `pca`, `first_sem`) are run through both algorithms so
-the effect of the feature set is separated from the effect of the algorithm.
+A single stratified **80/20 split** (3,539 development / 885 test rows, `random_state=42`). All model selection is cross-validated on the development set; 
 
 **Algorithms**
-
-- **Logistic Regression** (notebook 03) — the interpretable model. Tuned `C` (inverse L2) and
-  `class_weight` on macro-F1; coefficients read as odds ratios. Imbalance handled with balanced
-  class weights, compared against SMOTE on the binary task.
-- **Random Forest** (notebook 04) — the higher-capacity model. Tuned depth, leaf size, tree count,
-  `max_features` and `class_weight`; feature importances read against the screening and the paper.
 
 ## Results
 
 ### Cross-validation (development set, 5-fold)
 
-| Model | macro-F1 | balanced acc. | MCC | Enrolled recall | Graduate recall |
-|---|---|---|---|---|---|
-| Majority baseline | 0.222 | 0.333 | 0.000 | 0.00 | 1.00 |
-| Logistic Regression (all) | 0.714 | 0.721 | 0.611 | **0.608** | 0.821 |
-| Random Forest (all) | **0.726** | **0.727** | **0.632** | 0.578 | **0.859** |
 
-### Sealed test set (885 rows, touched once — notebook 05)
 
-**Three-class**
+### Sealed test set 
 
-| Model | accuracy | macro-F1 | MCC | ROC-AUC (OvR) | Enrolled recall |
-|---|---|---|---|---|---|
-| Logistic Regression | 0.722 | 0.683 | 0.570 | 0.885 | **0.616** |
-| Random Forest | **0.758** | **0.714** | **0.614** | **0.889** | 0.598 |
 
-**Binary — Dropout vs rest**
-
-| Model | accuracy | MCC | ROC-AUC | PR-AUC | Dropout recall |
-|---|---|---|---|---|---|
-| Logistic Regression | 0.860 | 0.685 | **0.917** | **0.882** | **0.813** |
-| Random Forest | **0.877** | **0.717** | 0.916 | 0.871 | 0.806 |
-
-**Reading it.** Random Forest is a little ahead on overall accuracy and macro-F1; Logistic
-Regression is stronger on the minority *Enrolled* class and marginally better at *ranking* dropout
-risk (ROC/PR). The margins on 885 rows are small, so the recommendation turns on **use, not score**:
-Logistic Regression is recommended as the operational early-warning model because it gives a
-support office a reason it can act on and defend, with Random Forest kept as the accuracy
-benchmark. Standardised PCA matches all-features on score for both models while forfeiting that
-interpretability — reported as the required reduction step, not the chosen model. The
-early-warning (first-semester) variant costs ~3 points of macro-F1, the honest price of acting a
-semester sooner.
 
 ## Repository structure
 
 ```
 ML-assignment-01/
 ├── data/
-│   ├── raw/              data.csv (UCI 697) + source notes
-│   └── processed/        CV + final-test results, tuned-param JSON
+│   ├── student_dropout.csv
 ├── notebooks/
-│   ├── 01_data_understanding.ipynb   EDA, class balance, correlations, clustering appendix
-│   ├── 02_preprocessing.ipynb        split, encoding, engineering, screening, PCA scree
-│   ├── 03_logistic_regression.ipynb  Algorithm 1 — tuning, odds, PCA, binary, early-warning
-│   ├── 04_random_forest.ipynb        Algorithm 2 — trees→forest, tuning, importances
-│   └── 05_comparison.ipynb           LR vs RF, the single sealed-test evaluation
-├── src/
-│   ├── data.py           split, column groups, engineered features
-│   ├── preprocess.py      ColumnTransformer / Pipeline, PCA, feature variants
-│   ├── evaluation.py      shared metrics so both models' tables concatenate
-│   └── viz.py             colour-blind-safe palette and figure style
-├── reports/
-│   ├── figures/          all generated figures
-│   └── ACCESSIBILITY.md   figure accessibility audit (WCAG-aligned)
+│   ├── Assignment.ipynb
 ├── requirements.txt
 ├── members.txt · submission.txt
 └── README.md
@@ -145,28 +82,15 @@ ML-assignment-01/
 
 ```bash
 pip install -r requirements.txt
-jupyter notebook            # run notebooks 01 → 05 in order
+jupyter notebook            # run notebooks 
 ```
 
-Notebook 01 downloads and caches `data/raw/data.csv` on first run. Notebooks 03 and 04 each save
-their cross-validation table and tuned parameters to `data/processed/`; notebook 05 reads both and
-produces the final-test numbers. `random_state=42` throughout makes every result reproducible.
 
 ## Individual contribution
 
-- **Lahiru Sandeepa (MS26929378)** — Logistic Regression (notebook 03), the shared evaluation and
-  the comparison notebook (05), standardised PCA, the accessible figure styling, and this README.
-- **Kusal Dissanayake (MS26929064)** — data understanding (01), preprocessing and feature
-  engineering (02), and Random Forest (04).
-
+- **Lahiru Sandeepa (MS26929378)** — 
+- **Kusal Dissanayake (MS26929064)** — 
 Both members commit under their own name throughout the project history.
-
-## Accessibility
-
-All figures use the colour-blind-safe Okabe–Ito palette and never rely on hue alone to carry
-meaning (confusion matrices are annotated with counts; lines carry distinct markers and legends;
-the three outcome classes keep one fixed colour everywhere). See
-[`reports/ACCESSIBILITY.md`](reports/ACCESSIBILITY.md).
 
 ## Licence
 
