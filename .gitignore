@@ -12,20 +12,12 @@ env/
 .ipynb_checkpoints/
 */.ipynb_checkpoints/
 
-# REAL dataset is never committed — download it into data/raw/ locally.
-# The committed sample (synthetic) lives in data/sample/ and is NOT ignored.
-data/raw/*
-!data/raw/README.md
-
-# Processed / generated data
-data/processed/*
-!data/processed/.gitkeep
+# Local data copies and generated files
+data/raw/
+data/processed/
 
 # OS / editor
 .DS_Store
 Thumbs.db
 .idea/
 .vscode/
-
-# Reports build artifacts (keep figures/)
-reports/*.pdf
